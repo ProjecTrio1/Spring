@@ -11,7 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -25,6 +24,7 @@ public class SecurityConfig {
 			.requestMatchers("/user/signup").permitAll()
 			.requestMatchers("/user/login").permitAll()
 			.requestMatchers("/note/add").permitAll()
+			.requestMatchers("/ai/**").permitAll() //250426 추가
 			.requestMatchers("/h2-console/**").permitAll())
 			.headers((headers) -> headers
 					.addHeaderWriter(new XFrameOptionsHeaderWriter(XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)))

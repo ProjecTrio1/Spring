@@ -3,15 +3,18 @@ package com.myapp.account.user;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class UserCreate {
 	@Size(min = 3, max = 25)
 	@NotEmpty(message = "사용자 ID는 필수 항목입니다.")
 	private String username;
+	
+	@NotEmpty(message = "성별은 필수 항목입니다.")
+	private String gender;
+	
+	private Integer age;
 	
 	@Size(min = 8, max = 20)
 	@NotEmpty(message = "비밀번호는 필수 항목입니다.")

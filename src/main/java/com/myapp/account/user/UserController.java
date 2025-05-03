@@ -29,11 +29,12 @@ public class UserController {
 	@PostMapping("/signup")
 	public ResponseEntity<String> signup(@RequestBody @Valid UserCreate userCreate){
 		System.out.println("회원가입 요청 도착 "+ userCreate.getEmail());
+		System.out.println("나이 확인: " + userCreate.getAge());
 		if(!userCreate.getPassword1().equals(userCreate.getPassword2())) {
 			return ResponseEntity.badRequest().body("2개의 비밀번호가 일치하지 않습니다.");//400
 		}
 		try {
-			userService.createUser(userCreate.getUsername(), userCreate.getEmail(), userCreate.getPassword1());
+			userService.createUser(userCreate.getUsername(), userCreate.getEmail(), userCreate.getPassword1(),userCreate.getGender(),userCreate.getAge());
 			return ResponseEntity.ok("회원가입 성공");
 		}catch(DataIntegrityViolationException e) {
 			return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 존재하는 사용자입니다.");//409
