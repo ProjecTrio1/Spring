@@ -1,11 +1,7 @@
-package com.myapp.account.note_add;
-
-import java.util.List;
+package com.exapp.comsumption.note_add;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.myapp.account.user.User;
-
 
 public interface NoteAddRepository extends JpaRepository<NoteAdd, Long>{
-	List<NoteAdd> findByUser(User user);
+
 }

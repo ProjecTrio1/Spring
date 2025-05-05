@@ -23,9 +23,10 @@ public class SecurityConfig {
 			.authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
 			.requestMatchers("/user/signup").permitAll()
 			.requestMatchers("/user/login").permitAll()
-			.requestMatchers("/note/add").permitAll()
+			.requestMatchers("/note/**").permitAll()
 			.requestMatchers("/ai/**").permitAll() //250426 추가
-			.requestMatchers("/h2-console/**").permitAll())
+			.requestMatchers("/h2-console/**").permitAll()
+			.anyRequest().authenticated())
 			.headers((headers) -> headers
 					.addHeaderWriter(new XFrameOptionsHeaderWriter(XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)))
 					;
