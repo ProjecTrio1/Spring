@@ -1,5 +1,7 @@
 package com.myapp.account.ai;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,7 +20,7 @@ public class AiController {
 	private AiService aiService;
 	
     @PostMapping("/flask")
-    public String sendToFlask(@RequestBody RequestSendToFlaskDto dto) throws JsonProcessingException{
+    public Map<String, Object> sendToFlask(@RequestBody RequestSendToFlaskDto dto) throws JsonProcessingException{
     	return aiService.sendToFlask(dto);
     }
 }

@@ -5,9 +5,10 @@ import com.myapp.account.user.User;
 
 public class FlaskRequestMapper {
 	public static RequestSendToFlaskDto from(NoteAdd node, User user) {
+		int genderCode = "M".equalsIgnoreCase(user.getGender()) ? 1:0;
 		return RequestSendToFlaskDto.builder()
 				.userId(node.getId().toString())
-				.gender(user.getGender())
+				.gender(genderCode)
 				.ageGroup(user.getAge())
 				.categoryGroup(node.getCategory())
 				.amount(node.getAmount())

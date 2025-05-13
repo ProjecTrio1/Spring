@@ -1,6 +1,8 @@
 package com.myapp.account.note_add;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.myapp.account.ai.AiService;
+import com.myapp.account.ai.FlaskRequestMapper;
+import com.myapp.account.ai.RequestSendToFlaskDto;
 import com.myapp.account.user.User;
 import com.myapp.account.user.UserRepository;
 
@@ -21,10 +26,12 @@ import com.myapp.account.user.UserRepository;
 public class NoteAddController {
 	private final NoteAddRepository noteAddRepository;
 	private final UserRepository userRepository;
+	private final AiService aiService;
 	
-	public NoteAddController(NoteAddRepository noteAddRepository, UserRepository userRepository) {
+	public NoteAddController(NoteAddRepository noteAddRepository, UserRepository userRepository,AiService aiService) {
 		this.noteAddRepository = noteAddRepository;
 		this.userRepository = userRepository;
+		this.aiService = aiService;
 	}
 	
 	@PostMapping("/add")
@@ -43,15 +50,32 @@ public class NoteAddController {
 			noteAdd.setContent((String) consume.get("content"));
 			noteAdd.setCategory((String) consume.get("category"));
 			noteAdd.setMemo((String) consume.get("memo"));
-			noteAdd.setCreatedAt(LocalDateTime.parse((String) consume.get("createdAt")));
+			DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+			noteAdd.setCreatedAt(LocalDateTime.parse((String) consume.get("createdAt"),formatter));
 			noteAdd.setIsRegularExpense((Boolean) consume.get("isRegularExpense"));
 			noteAdd.setNotifyOverspend((Boolean) consume.get("notifyOverspend"));
 			noteAdd.setIsIncome((Boolean) consume.get("isIncome"));
 			
 			noteAdd.setUser(user);
-			
 			NoteAdd save = noteAddRepository.save(noteAdd);
-			return ResponseEntity.ok(save);
+			
+			//Flask 분석 요청 20250513
+			RequestSendToFlaskDto dto = FlaskRequestMapper.from(save, user);
+			//시간 정보 파싱
+			LocalDateTime createdAt = save.getCreatedAt();
+			dto.setHour(createdAt.getHour());
+			dto.setDay(createdAt.getDayOfWeek().getValue());
+			
+			Map<String, Object> aiResponse = aiService.sendToFlask(dto);
+			
+			Map<String,Object> result = new HashMap<>();
+			result.put("save", save);
+			if(aiResponse.containsKey("recommendation")) {
+				result.put("recommendation", aiResponse.get("recommendation"));
+			}
+			
+			result.put("overspending", aiResponse.get("overspending"));
+			return ResponseEntity.ok(result);
 		}catch(Exception e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("저장 실패 : "+e.getMessage());
 		}

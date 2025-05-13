@@ -13,14 +13,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RequestSendToFlaskDto {
 	private String userId;
-	private String gender;
+	
+	@JsonProperty("sex")
+	private int gender;
 	
 	@JsonProperty("age")
 	private int ageGroup;
 	
 	@JsonProperty("category_group")
 	private String categoryGroup;
+//	private Map<String, Integer> category;
 	
 	@JsonProperty("amt")
 	private int amount;
+	
+	private int hour;
+	private int day;
 }
