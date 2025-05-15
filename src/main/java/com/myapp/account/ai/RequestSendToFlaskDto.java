@@ -29,4 +29,5 @@ public class RequestSendToFlaskDto {
 	
 	private int hour;
 	private int day;
+	private Boolean isIncome;
 }

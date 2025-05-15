@@ -12,6 +12,7 @@ public class FlaskRequestMapper {
 				.ageGroup(user.getAge())
 				.categoryGroup(node.getCategory())
 				.amount(node.getAmount())
+				.isIncome(node.getIsIncome())
 				.build();
 	}
 }

@@ -18,6 +18,9 @@ public class AiService {
     private final RestTemplate restTemplate = new RestTemplate();
     
     public Map<String, Object> sendToFlask(RequestSendToFlaskDto dto) throws JsonProcessingException{
+    	if(Boolean.TRUE.equals(dto.getIsIncome())) {
+    		return Map.of("recommendation","","overspending",false);
+    	}
     	String flaskURL = "http://localhost:5000/overspending";
     	
     	ObjectMapper objectMapper = new ObjectMapper();
