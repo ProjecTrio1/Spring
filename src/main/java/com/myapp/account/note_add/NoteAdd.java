@@ -33,7 +33,7 @@ public class NoteAdd {
 	private Boolean isRegularExpense;
 	private Boolean notifyOverspend;
 	private Boolean isIncome;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	@JsonBackReference //순환 직렬화 방지

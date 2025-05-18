@@ -8,7 +8,9 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,11 +29,13 @@ public class NoteAddController {
 	private final NoteAddRepository noteAddRepository;
 	private final UserRepository userRepository;
 	private final AiService aiService;
+	private final NoteAddService noteAddService;
 	
-	public NoteAddController(NoteAddRepository noteAddRepository, UserRepository userRepository,AiService aiService) {
+	public NoteAddController(NoteAddRepository noteAddRepository, UserRepository userRepository,AiService aiService,NoteAddService noteAddService) {
 		this.noteAddRepository = noteAddRepository;
 		this.userRepository = userRepository;
 		this.aiService = aiService;
+		this.noteAddService = noteAddService;
 	}
 	
 	@PostMapping("/add")
@@ -63,7 +67,8 @@ public class NoteAddController {
 			RequestSendToFlaskDto dto = FlaskRequestMapper.from(save, user);
 			//시간 정보 파싱
 			LocalDateTime createdAt = save.getCreatedAt();
-			dto.setHour(createdAt.getHour());
+			int hourGroup = convertHourToGroup(createdAt.getHour());
+			dto.setHour(hourGroup);
 			dto.setDay(createdAt.getDayOfWeek().getValue());
 			
 			Map<String, Object> aiResponse = aiService.sendToFlask(dto);
@@ -80,6 +85,18 @@ public class NoteAddController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("저장 실패 : "+e.getMessage());
 		}
 	}
+	public int convertHourToGroup(int hour){
+	    if(hour < 7) return 1;
+	    if(hour < 9) return 2;
+	    if(hour < 11) return 3;
+	    if(hour < 13) return 4;
+	    if(hour < 15) return 5;
+	    if(hour < 17) return 6;
+	    if(hour < 19) return 7;
+	    if(hour < 21) return 8;
+	    if(hour < 23) return 9;
+	    return 10;
+	  }
 	
 	@GetMapping("/list")
 	public ResponseEntity<List<NoteAdd>> getNotesByEntity(@RequestParam("userID") Long userID){
@@ -90,5 +107,12 @@ public class NoteAddController {
 		}catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
+	}
+	@CrossOrigin(origins="*")
+	@GetMapping("/delete/{id}")
+	public ResponseEntity<Void> delete(@PathVariable("id") Long id){
+		System.out.println("delete 요청 들어옴: " + id);
+		noteAddService.deleteExpense(id);
+		return ResponseEntity.noContent().build();
 	}
 }
