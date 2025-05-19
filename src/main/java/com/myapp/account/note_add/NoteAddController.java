@@ -1,12 +1,15 @@
 package com.myapp.account.note_add;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -66,20 +69,23 @@ public class NoteAddController {
 			//Flask 분석 요청 20250513
 			RequestSendToFlaskDto dto = FlaskRequestMapper.from(save, user);
 			//시간 정보 파싱
-			LocalDateTime createdAt = save.getCreatedAt();
-			int hourGroup = convertHourToGroup(createdAt.getHour());
+			int hourGroup = convertHourToGroup(save.getCreatedAt().getHour());
 			dto.setHour(hourGroup);
-			dto.setDay(createdAt.getDayOfWeek().getValue());
+			dto.setDay(save.getCreatedAt().getDayOfWeek().getValue());
 			
 			Map<String, Object> aiResponse = aiService.sendToFlask(dto);
-			
+			//결과 저장
+			save.setIsAnomaly((Boolean) aiResponse.get("anomaly"));
+			save.setIsOverspending((Boolean) aiResponse.get("overspending"));
+			noteAddRepository.save(save);
+			//결과 반환
 			Map<String,Object> result = new HashMap<>();
 			result.put("save", save);
+			result.put("anomaly", aiResponse.get("anomaly"));
+			result.put("overspendgin", aiResponse.get("overspending"));
 			if(aiResponse.containsKey("recommendation")) {
 				result.put("recommendation", aiResponse.get("recommendation"));
 			}
-			
-			result.put("overspending", aiResponse.get("overspending"));
 			return ResponseEntity.ok(result);
 		}catch(Exception e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("저장 실패 : "+e.getMessage());
@@ -97,7 +103,7 @@ public class NoteAddController {
 	    if(hour < 23) return 9;
 	    return 10;
 	  }
-	
+	//내역보여주기
 	@GetMapping("/list")
 	public ResponseEntity<List<NoteAdd>> getNotesByEntity(@RequestParam("userID") Long userID){
 		try {
@@ -108,11 +114,24 @@ public class NoteAddController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
 	}
+	//삭제
 	@CrossOrigin(origins="*")
 	@GetMapping("/delete/{id}")
 	public ResponseEntity<Void> delete(@PathVariable("id") Long id){
 		System.out.println("delete 요청 들어옴: " + id);
 		noteAddService.deleteExpense(id);
 		return ResponseEntity.noContent().build();
+	}
+	//월간리포트
+	@GetMapping("/report/monthly/{userId}")
+	public ResponseEntity<?> getMonthlyReport(@PathVariable("userId") Long userID){
+		try {
+			MonthlyReportDto report = noteAddService.generateMonthlyReport(userID);
+			return ResponseEntity.ok(report);
+		}catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("리포트 생성 중 오류: "+e.getMessage());
+		}
+
 	}
 }

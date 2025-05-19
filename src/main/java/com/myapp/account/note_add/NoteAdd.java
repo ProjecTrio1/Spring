@@ -38,4 +38,7 @@ public class NoteAdd {
 	@JoinColumn(name = "user_id")
 	@JsonBackReference //순환 직렬화 방지
 	private User user;
+	
+	private Boolean isAnomaly;
+	private Boolean isOverspending;
 }

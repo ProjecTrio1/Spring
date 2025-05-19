@@ -11,5 +11,8 @@ public interface NoteAddRepository extends JpaRepository<NoteAdd, Long>{
 	List<NoteAdd> findByUser(User user);
 	//정기지출
 	List<NoteAdd> findByIsRegularExpenseTrueAndCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+	//삭제
 	void deleteById(Long id);
+	//월간리포트
+	List<NoteAdd> findByUserAndCreatedAtBetween(User user, LocalDateTime start, LocalDateTime end );
 }
