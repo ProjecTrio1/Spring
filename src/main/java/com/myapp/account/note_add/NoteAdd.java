@@ -41,4 +41,5 @@ public class NoteAdd {
 	
 	private Boolean isAnomaly;
 	private Boolean isOverspending;
+	private Boolean userFeedback;
 }

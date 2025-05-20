@@ -66,18 +66,26 @@ public class NoteAddService {
 			if(!note.getIsIncome()) {
 				totalAmount += note.getAmount();
 				String cat = note.getCategory();
-				categoryMap.putIfAbsent(cat, new CategoryStatDto(cat, 0, 0, 0));
+				categoryMap.putIfAbsent(cat, new CategoryStatDto(cat, 0, 0, 0,new ArrayList<>()));
 				CategoryStatDto stat = categoryMap.get(cat);
 				
 				stat.setTotalAmount(stat.getTotalAmount()+note.getAmount());
-				
+//				System.out.println("카테고리 체크: " + note.getCategory());
+
+				boolean added = false; //이상소비 또는 과소비일 경우 리스트에 추가
 				if(Boolean.TRUE.equals(note.getIsAnomaly())) {
 					stat.setAnomalyCount(stat.getAnomalyCount()+1);
 					anomalyCount++;
+					added = true;
 				}
 				if(Boolean.TRUE.equals(note.getIsOverspending())) {
 					stat.setOverspendingCount(stat.getOverspendingCount()+1);
 					overspendingCount++;
+					added = true;
+				}
+				
+				if(added) {
+					stat.getFlaggedItems().add(toDto(note));
 				}
 				if(note.getCreatedAt().getHour() >=22) {
 					lateNightTotal += note.getAmount();
@@ -133,5 +141,16 @@ public class NoteAddService {
 			map.put(category, map.getOrDefault(category, 0)+note.getAmount());
 		}
 		return map;
+	}
+	
+	private NoteItemDto toDto(NoteAdd note) {
+		return new NoteItemDto(
+				note.getId(),
+				note.getContent(),
+				note.getAmount(),
+				note.getCreatedAt().toLocalDate().toString(),
+				Boolean.TRUE.equals(note.getIsAnomaly()),
+				Boolean.TRUE.equals(note.getIsOverspending())
+		);
 	}
 }

@@ -1,15 +1,11 @@
 package com.myapp.account.note_add;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -132,6 +128,13 @@ public class NoteAddController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body("리포트 생성 중 오류: "+e.getMessage());
 		}
-
+	}
+	//사용자 피드백
+	@PostMapping("/report/feedback")
+	public ResponseEntity<?> feedback(@RequestBody FeedbackDto dto){
+		NoteAdd note = noteAddRepository.findById(dto.getNoteId()).orElseThrow(() -> new RuntimeException("Not found"));
+		note.setUserFeedback(dto.isAgree());
+		noteAddRepository.save(note);
+		return ResponseEntity.ok("피드백 반영 완료");
 	}
 }
