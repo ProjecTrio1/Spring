@@ -14,5 +14,6 @@ public class CategoryStatDto {
 	public int totalAmount;
 	public int anomalyCount;
 	public int overspendingCount;
-	public List<NoteItemDto> flaggedItems; //항목 리스트
+	public List<NoteItemDto> flaggedItems; //과소비/이상소비 개별 항목들
 }
+//MonthlyReportDto 안에서 카테고리별 소비 통계 표현

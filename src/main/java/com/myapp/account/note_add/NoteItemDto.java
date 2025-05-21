@@ -14,4 +14,6 @@ public class NoteItemDto {
 	private String date;
 	private boolean isAnomaly;
 	private boolean isOverspending;
+	private Boolean userFeedback; //boolean과 다르게 true, false, null을 가짐
 }
+//개별 소비 항목에 대한 정보 제공

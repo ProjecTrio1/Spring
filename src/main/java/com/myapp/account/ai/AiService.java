@@ -1,5 +1,8 @@
 package com.myapp.account.ai;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.*;
@@ -9,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.myapp.account.note_add.NoteAdd;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,5 +37,41 @@ public class AiService {
     	ResponseEntity<String> response = restTemplate.postForEntity(flaskURL,request,String.class);
     	
     	return objectMapper.readValue(response.getBody(), new TypeReference<Map<String,Object>>() {});
+    }
+    //사용자 맞춤 모델 학습 요청
+    public boolean requestTrainToFlask(RequestSendToFlaskDto dto, List<NoteAdd> records) throws JsonProcessingException{
+    	String flaskURL = "http://localhost:5000/train_user_model";
+    	
+    	Map<String, Object> requestBody = new HashMap<>();
+    	requestBody.put("userId", dto.getUserId());
+    	requestBody.put("gender", dto.getGender());
+    	requestBody.put("ageGroup", dto.getAgeGroup());
+    	
+    	List<Map<String, Object>> recordList = new ArrayList<>();
+    	for(NoteAdd note : records) {
+    		if(!note.getIsIncome()) {
+    			Map<String, Object> record = new HashMap<>();
+    			record.put("hour", note.getCreatedAt().getHour());
+    			record.put("day", note.getCreatedAt().getDayOfWeek().getValue());
+    			record.put("amt", note.getAmount());
+    			record.put("category_group", note.getCategory());
+    			record.put("isIncome", false);
+    			recordList.add(record);
+    		}
+    	}
+    	requestBody.put("records", recordList);
+    	
+    	HttpHeaders headers = new HttpHeaders();
+    	headers.setContentType(MediaType.APPLICATION_JSON);
+    	HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody,headers);
+    	RestTemplate restTemplate = new RestTemplate();
+    	
+    	try {
+    		ResponseEntity<String> response = restTemplate.postForEntity(flaskURL, request, String.class);
+    		return response.getStatusCode() == HttpStatus.OK;
+    	}catch (Exception e) {
+    		e.printStackTrace();
+    		return false;
+    	}
     }
 }

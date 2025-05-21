@@ -1,7 +1,9 @@
 package com.myapp.account.note_add;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -130,7 +132,7 @@ public class NoteAddService {
 	private Map<String, Integer> getLastMonthCategoryTotals(Long userId){
 		YearMonth lastMonth = YearMonth.now().minusMonths(2);
 		LocalDateTime start = lastMonth.atDay(1).atStartOfDay();
-		LocalDateTime end = lastMonth.atEndOfMonth().atTime(23,59);
+		LocalDateTime end = lastMonth.atEndOfMonth().atTime(LocalTime.MAX);
 		
 		User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
 		List<NoteAdd> lastMonthNotes = noteAddRepository.findByUserAndCreatedAtBetween(user, start, end);
@@ -150,7 +152,34 @@ public class NoteAddService {
 				note.getAmount(),
 				note.getCreatedAt().toLocalDate().toString(),
 				Boolean.TRUE.equals(note.getIsAnomaly()),
-				Boolean.TRUE.equals(note.getIsOverspending())
+				Boolean.TRUE.equals(note.getIsOverspending()),
+				note.getUserFeedback()
 		);
+	}
+	//사용자 맞춤ai로 전환하기 위한 조건 판별
+	public boolean shouldTrainPersonalModel(Long userId) {
+		User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+		List<NoteAdd> records = noteAddRepository.findByUser(user);
+		int spendingCount =0; //300건이상
+		LocalDateTime spendingDate = null; //3개월이상
+		
+		for(NoteAdd note: records) {
+			if(!note.getIsIncome()) {
+				spendingCount++;
+				LocalDateTime noteDate = note.getCreatedAt();
+				if(spendingDate == null || noteDate.isBefore(spendingDate)) {
+					spendingDate = noteDate; //제일 처음 소비 기록한 시간
+				}
+			}
+		}
+		
+		boolean hasEnoughRecords = spendingCount >= 300;
+		boolean hasEnoughMonths = false;
+		
+		if(spendingDate != null) {
+			long monthsBetween = ChronoUnit.MONTHS.between(spendingDate, LocalDateTime.now());
+			hasEnoughMonths = monthsBetween >= 3;
+		}
+		return hasEnoughRecords && hasEnoughMonths;
 	}
 }

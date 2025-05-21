@@ -17,3 +17,4 @@ public class MonthlyReportDto {
 	private List<CategoryStatDto> byCategory;
 	private String suggestion;
 }
+//월간 리포트 전체를 나타내는 상위 DTO
