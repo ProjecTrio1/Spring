@@ -79,6 +79,9 @@ public class NoteAddController {
 			result.put("save", save);
 			result.put("anomaly", aiResponse.get("anomaly"));
 			result.put("overspendgin", aiResponse.get("overspending"));
+			//사용자 맞춤 ai 전환 확인
+			noteAddService.checkAndTrain(UserID);
+			
 			if(aiResponse.containsKey("recommendation")) {
 				result.put("recommendation", aiResponse.get("recommendation"));
 			}

@@ -11,6 +11,9 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.myapp.account.ai.AiService;
+import com.myapp.account.ai.RequestSendToFlaskDto;
 import com.myapp.account.user.User;
 import com.myapp.account.user.UserRepository;
 
@@ -18,10 +21,12 @@ import com.myapp.account.user.UserRepository;
 public class NoteAddService {
 	private final NoteAddRepository noteAddRepository;
 	private final UserRepository userRepository;
+	private final AiService aiService;
 	
-	public NoteAddService(NoteAddRepository noteAddRepository, UserRepository userRepository) {
+	public NoteAddService(NoteAddRepository noteAddRepository, UserRepository userRepository, AiService aiService) {
 		this.noteAddRepository = noteAddRepository;
 		this.userRepository = userRepository;
+		this.aiService = aiService;
 	}
 	
 	public NoteAdd saveNote(NoteAdd noteadd) {
@@ -181,5 +186,29 @@ public class NoteAddService {
 			hasEnoughMonths = monthsBetween >= 3;
 		}
 		return hasEnoughRecords && hasEnoughMonths;
+	}
+	//조건 판별 후 학습 요청
+	public void checkAndTrain(Long userId) {
+		User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));		
+		boolean check = shouldTrainPersonalModel(userId);
+		System.out.println("모델 전환 조건 충족 여부: " + check);
+		int genderCode = "M".equalsIgnoreCase(user.getGender()) ? 1:0;
+		
+		if(check) {
+			System.out.println("사용자 맞춤 모델 학습 요청 시작");
+			List<NoteAdd> records = noteAddRepository.findByUser(user);
+			RequestSendToFlaskDto dto = new RequestSendToFlaskDto();
+			dto.setUserId(user.getId().toString());
+			dto.setGender(genderCode);
+			dto.setAgeGroup(user.getAge());
+			
+			try {
+				aiService.requestTrainToFlask(dto, records);
+				System.out.println("Flask 요청 완료");
+			}catch(JsonProcessingException e) {
+				System.out.println("Flask 요청 실패 : "+ e.getMessage());
+				e.printStackTrace();
+			}
+		}
 	}
 }
