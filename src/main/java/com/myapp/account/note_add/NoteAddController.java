@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import com.myapp.account.ai.AiService;
 import com.myapp.account.ai.FlaskRequestMapper;
@@ -140,4 +141,29 @@ public class NoteAddController {
 		noteAddRepository.save(note);
 		return ResponseEntity.ok("피드백 반영 완료");
 	}
+	
+	//수정
+	@PutMapping("/update/{id}")
+	public ResponseEntity<?> updateNote(@PathVariable Long id, @RequestBody Map<String, Object> updatedData) {
+	    try {
+	        NoteAdd note = noteAddRepository.findById(id)
+	            .orElseThrow(() -> new RuntimeException("수정할 항목이 존재하지 않습니다."));
+
+	        note.setAmount((Integer) updatedData.get("amount"));
+	        note.setContent((String) updatedData.get("content"));
+	        note.setCategory((String) updatedData.get("category"));
+	        note.setMemo((String) updatedData.get("memo"));
+	        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+	        note.setCreatedAt(LocalDateTime.parse((String) updatedData.get("createdAt"), formatter));
+	        note.setIsRegularExpense((Boolean) updatedData.get("isRegularExpense"));
+	        note.setNotifyOverspend((Boolean) updatedData.get("notifyOverspend"));
+	        note.setIsIncome((Boolean) updatedData.get("isIncome"));
+
+	        noteAddRepository.save(note);
+	        return ResponseEntity.ok("수정 완료");
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("수정 실패: " + e.getMessage());
+	    }
+	}
+
 }
