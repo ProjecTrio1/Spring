@@ -7,7 +7,7 @@ public class FlaskRequestMapper {
 	public static RequestSendToFlaskDto from(NoteAdd node, User user) {
 		int genderCode = "M".equalsIgnoreCase(user.getGender()) ? 1:0;
 		return RequestSendToFlaskDto.builder()
-				.userId(node.getId().toString())
+				.userId(user.getId().toString())
 				.gender(genderCode)
 				.ageGroup(user.getAge())
 				.categoryGroup(node.getCategory())

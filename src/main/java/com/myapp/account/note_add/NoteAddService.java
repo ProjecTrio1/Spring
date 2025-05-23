@@ -50,6 +50,8 @@ public class NoteAddService {
 			newExpense.setAmount(noteadd.getAmount());
 			newExpense.setCreatedAt(noteadd.getCreatedAt().plusMonths(1));
 			newExpense.setIsRegularExpense(true);
+			newExpense.setIsIncome(false);
+			newExpense.setNotifyOverspend(false);
 			
 			noteAddRepository.save(newExpense);
 			System.out.println("✅ 복사 완료: " + noteadd.getId());
@@ -177,7 +179,6 @@ public class NoteAddService {
 				}
 			}
 		}
-		
 		boolean hasEnoughRecords = spendingCount >= 300;
 		boolean hasEnoughMonths = false;
 		
@@ -190,11 +191,13 @@ public class NoteAddService {
 	//조건 판별 후 학습 요청
 	public void checkAndTrain(Long userId) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));		
-		boolean check = shouldTrainPersonalModel(userId);
-		System.out.println("모델 전환 조건 충족 여부: " + check);
+		boolean shouldTrainUnsupervised = shouldTrainPersonalModel(userId);
+		boolean shouldTrainSupervised = shouldTrainFeedback(userId);
+		System.out.println("모델 전환 조건 충족 여부(비지도): " + shouldTrainUnsupervised);
+		System.out.println("모델 전환 조건 충족 여부(지도): " + shouldTrainSupervised);
 		int genderCode = "M".equalsIgnoreCase(user.getGender()) ? 1:0;
 		
-		if(check) {
+		if(shouldTrainUnsupervised || shouldTrainSupervised) {
 			System.out.println("사용자 맞춤 모델 학습 요청 시작");
 			List<NoteAdd> records = noteAddRepository.findByUser(user);
 			RequestSendToFlaskDto dto = new RequestSendToFlaskDto();
@@ -203,12 +206,27 @@ public class NoteAddService {
 			dto.setAgeGroup(user.getAge());
 			
 			try {
-				aiService.requestTrainToFlask(dto, records);
+				if(shouldTrainUnsupervised) {
+					aiService.requestTrainToFlask(dto, records);
+				}else if(shouldTrainSupervised){
+					aiService.requestTrainFeedback(dto, records);
+				}
 				System.out.println("Flask 요청 완료");
 			}catch(JsonProcessingException e) {
 				System.out.println("Flask 요청 실패 : "+ e.getMessage());
 				e.printStackTrace();
 			}
 		}
+	}
+	//피드백 반영 후 지도 학습 전환 조건 판별
+	public boolean shouldTrainFeedback(Long userId) {
+		User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+		List<NoteAdd> records = noteAddRepository.findByUser(user);
+		
+		long feedbackCount = records.stream()
+				.filter(note -> Boolean.TRUE.equals(note.getUserFeedback()))
+				.count();
+		
+		return feedbackCount >= 100;
 	}
 }

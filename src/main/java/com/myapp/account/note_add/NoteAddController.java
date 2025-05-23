@@ -79,7 +79,7 @@ public class NoteAddController {
 			Map<String,Object> result = new HashMap<>();
 			result.put("save", save);
 			result.put("anomaly", aiResponse.get("anomaly"));
-			result.put("overspendgin", aiResponse.get("overspending"));
+			result.put("overspending", aiResponse.get("overspending"));
 			//사용자 맞춤 ai 전환 확인
 			noteAddService.checkAndTrain(UserID);
 			

@@ -44,8 +44,6 @@ public class AiService {
     	
     	Map<String, Object> requestBody = new HashMap<>();
     	requestBody.put("userId", dto.getUserId());
-    	requestBody.put("gender", dto.getGender());
-    	requestBody.put("ageGroup", dto.getAgeGroup());
     	
     	List<Map<String, Object>> recordList = new ArrayList<>();
     	for(NoteAdd note : records) {
@@ -61,15 +59,44 @@ public class AiService {
     	}
     	requestBody.put("records", recordList);
     	
-    	HttpHeaders headers = new HttpHeaders();
-    	headers.setContentType(MediaType.APPLICATION_JSON);
-    	HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody,headers);
-    	RestTemplate restTemplate = new RestTemplate();
+    	return sendPostToFlask(flaskURL, requestBody);
+    }
+    //지도학습 모델 학습 요청
+    public boolean requestTrainFeedback(RequestSendToFlaskDto dto, List<NoteAdd> records) throws JsonProcessingException{
+    	String flaskURL = "http://localhost:5000/train_feedback_model";
     	
+    	Map<String, Object> requestBody = new HashMap<>();
+    	requestBody.put("userId", dto.getUserId());
+    	
+    	List<Map<String, Object>> recordList = new ArrayList<>();
+    	for(NoteAdd note : records) {
+    		if(!note.getIsIncome()) {
+    			Map<String, Object> record = new HashMap<>();
+    			record.put("hour", note.getCreatedAt().getHour());
+    			record.put("day", note.getCreatedAt().getDayOfWeek().getValue());
+    			record.put("amt", note.getAmount());
+    			record.put("category_group", note.getCategory());
+    			record.put("isIncome", false);
+    			record.put("user_feedback", note.getUserFeedback() == null ? null : note.getUserFeedback());
+    			record.put("overspending", note.getIsOverspending());
+    			record.put("anomaly", note.getIsAnomaly());
+    			recordList.add(record);
+    		}
+    	}
+    	requestBody.put("records", recordList);
+    	
+    	return sendPostToFlask(flaskURL, requestBody);
+    }
+    
+    private boolean sendPostToFlask(String url, Map<String, Object> body) {
     	try {
-    		ResponseEntity<String> response = restTemplate.postForEntity(flaskURL, request, String.class);
+    		HttpHeaders headers = new HttpHeaders();
+        	headers.setContentType(MediaType.APPLICATION_JSON);
+        	HttpEntity<Map<String, Object>> request = new HttpEntity<>(body,headers);
+        	RestTemplate restTemplate = new RestTemplate();
+        	ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
     		return response.getStatusCode() == HttpStatus.OK;
-    	}catch (Exception e) {
+    	}catch(Exception e) {
     		e.printStackTrace();
     		return false;
     	}
