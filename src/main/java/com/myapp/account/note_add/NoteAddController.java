@@ -165,5 +165,34 @@ public class NoteAddController {
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("수정 실패: " + e.getMessage());
 	    }
 	}
+	
+	// 금액 합계 조회
+	@GetMapping("/total")
+	public ResponseEntity<?> getCategoryTotal(
+	        @RequestParam("userId") Long userId,
+	        @RequestParam("category") String category,
+	        @RequestParam("year") int year,
+	        @RequestParam("month") int month
+	) {
+	    try {
+	        User user = userRepository.findById(userId)
+	                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+
+	        LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
+	        LocalDateTime end = start.plusMonths(1);
+	        
+	        int total = noteAddRepository.findByUserAndCreatedAtBetween(user, start, end).stream()
+	                .filter(n -> category.equals(n.getCategory()) && !n.getIsIncome())
+	                .mapToInt(NoteAdd::getAmount)
+	                .sum();
+
+	        Map<String, Integer> result = new HashMap<>();
+	        result.put("total", total);
+	        return ResponseEntity.ok(result);
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("합계 조회 실패: " + e.getMessage());
+	    }
+	}
+
 
 }
