@@ -229,4 +229,33 @@ public class NoteAddService {
 		
 		return feedbackCount >= 100;
 	}
+	//수정
+	public void updateNote(Long noteId, NoteUpdateDto dto) {
+		NoteAdd note = noteAddRepository.findById(noteId)
+	            .orElseThrow(() -> new RuntimeException("수정할 항목이 존재하지 않습니다."));
+
+	        note.setAmount(dto.getAmount());
+	        note.setContent(dto.getContent());
+	        note.setCategory(dto.getCategory());
+	        note.setMemo(dto.getMemo());
+	        note.setCreatedAt(LocalDateTime.parse(dto.getCreatedAt()));
+	        note.setIsRegularExpense(dto.getIsRegularExpense());
+	        note.setNotifyOverspend(dto.getNotifyOverspend());
+	        note.setIsIncome(dto.getIsIncome());
+
+	        noteAddRepository.save(note);
+	}
+	//카테고리 합계
+	public int getCategoryTotal(Long userId, String category, int year, int month) {
+		User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+
+        LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
+        LocalDateTime end = start.plusMonths(1);
+        
+        return noteAddRepository.findByUserAndCreatedAtBetween(user, start, end).stream()
+                .filter(n -> category.equals(n.getCategory()) && !n.getIsIncome())
+                .mapToInt(NoteAdd::getAmount)
+                .sum();
+	}
 }

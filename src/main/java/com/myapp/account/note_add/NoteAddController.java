@@ -116,10 +116,10 @@ public class NoteAddController {
 	}
 	//삭제
 	@CrossOrigin(origins="*")
-	@GetMapping("/delete/{id}")
-	public ResponseEntity<Void> delete(@PathVariable("id") Long id){
-		System.out.println("delete 요청 들어옴: " + id);
-		noteAddService.deleteExpense(id);
+	@GetMapping("/delete/{noteid}")
+	public ResponseEntity<Void> delete(@PathVariable("noteid") Long noteid){
+		System.out.println("delete 요청 들어옴: " + noteid);
+		noteAddService.deleteExpense(noteid);
 		return ResponseEntity.noContent().build();
 	}
 	//월간리포트
@@ -143,30 +143,17 @@ public class NoteAddController {
 	}
 	
 	//수정
-	@PutMapping("/update/{userId}")
-	public ResponseEntity<?> updateNote(@PathVariable("userId") Long userId, @RequestBody Map<String, Object> updatedData) {
+	@PutMapping("/update/{noteId}")
+	public ResponseEntity<?> updateNote(@PathVariable("noteId") Long noteId, @RequestBody NoteUpdateDto dto) {
 	    try {
-	        NoteAdd note = noteAddRepository.findById(userId)
-	            .orElseThrow(() -> new RuntimeException("수정할 항목이 존재하지 않습니다."));
-
-	        note.setAmount((Integer) updatedData.get("amount"));
-	        note.setContent((String) updatedData.get("content"));
-	        note.setCategory((String) updatedData.get("category"));
-	        note.setMemo((String) updatedData.get("memo"));
-	        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
-	        note.setCreatedAt(LocalDateTime.parse((String) updatedData.get("createdAt"), formatter));
-	        note.setIsRegularExpense((Boolean) updatedData.get("isRegularExpense"));
-	        note.setNotifyOverspend((Boolean) updatedData.get("notifyOverspend"));
-	        note.setIsIncome((Boolean) updatedData.get("isIncome"));
-
-	        noteAddRepository.save(note);
+	        noteAddService.updateNote(noteId, dto);
 	        return ResponseEntity.ok("수정 완료");
 	    } catch (Exception e) {
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("수정 실패: " + e.getMessage());
 	    }
 	}
 	
-	// 금액 합계 조회
+	// 카테고리 합계
 	@GetMapping("/total")
 	public ResponseEntity<?> getCategoryTotal(
 	        @RequestParam("userId") Long userId,
@@ -175,17 +162,7 @@ public class NoteAddController {
 	        @RequestParam("month") int month
 	) {
 	    try {
-	        User user = userRepository.findById(userId)
-	                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
-
-	        LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
-	        LocalDateTime end = start.plusMonths(1);
-	        
-	        int total = noteAddRepository.findByUserAndCreatedAtBetween(user, start, end).stream()
-	                .filter(n -> category.equals(n.getCategory()) && !n.getIsIncome())
-	                .mapToInt(NoteAdd::getAmount)
-	                .sum();
-
+	        int total = noteAddService.getCategoryTotal(userId,category,year,month);
 	        Map<String, Integer> result = new HashMap<>();
 	        result.put("total", total);
 	        return ResponseEntity.ok(result);
