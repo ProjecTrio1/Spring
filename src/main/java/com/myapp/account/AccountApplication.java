@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-@EntityScan(basePackages= {"com.myapp.account.note_add", "com.myapp.account.user"})
+@EntityScan(basePackages= {"com.myapp.account.note_add", "com.myapp.account.user", "com.myapp.account.answer", "com.myapp.account.question"})
 public class AccountApplication {
 
 	public static void main(String[] args) {
