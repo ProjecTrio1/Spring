@@ -45,7 +45,7 @@ public class User {
 	@JsonIgnore//순환 직렬화 방지
 	private List<NoteAdd> notes = new ArrayList<>();
 	
-	@ManyToMany(mappedBy = "scarp")
+	@ManyToMany(mappedBy = "scrap")
 	private Set<Question> scrappedQuestions;
 }
 

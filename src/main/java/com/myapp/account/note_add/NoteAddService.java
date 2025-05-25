@@ -227,7 +227,7 @@ public class NoteAddService {
 				.filter(note -> Boolean.TRUE.equals(note.getUserFeedback()))
 				.count();
 		
-		return feedbackCount >= 100;
+		return feedbackCount >= 300;
 	}
 	//수정
 	public void updateNote(Long noteId, NoteUpdateDto dto) {
