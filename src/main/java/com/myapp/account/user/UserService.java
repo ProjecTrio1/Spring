@@ -1,6 +1,9 @@
 package com.myapp.account.user;
 
 import org.springframework.stereotype.Service;
+
+import com.myapp.account.question.DataNotFoundException;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,11 @@ public class UserService {
 		user.setGender(gender);
 		this.userRepository.save(user);
 		return user;
+	}
+	
+	public User getUser(String username) {
+		return this.userRepository.findByUsername(username)
+				.orElseThrow(() -> new DataNotFoundException("user not found"));
 	}
 
 }
