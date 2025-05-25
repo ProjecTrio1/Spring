@@ -30,7 +30,7 @@ public class AnswerController {
 	private final AnswerService answerService;
 	private final UserService userService;
 	
-	@PreAuthorize("isAuthenticated()")
+	//@PreAuthorize("isAuthenticated()")
 	@PostMapping("/create/{id}")
 	public ResponseEntity<?> createAnswer(@RequestBody @Valid AnswerForm answerForm, @PathVariable("id") Integer id, Principal principal,  BindingResult bindingResult){
 		if(bindingResult.hasErrors()) {
@@ -46,7 +46,7 @@ public class AnswerController {
 		}
 	}
 	
-	@PreAuthorize("isAuthenticated()")
+	//@PreAuthorize("isAuthenticated()")
 	@PutMapping("/modify/{id}")
 	public ResponseEntity<?> modifyAnswer(@RequestBody @Valid AnswerForm answerForm,@PathVariable("id") Integer id, Principal principal, BindingResult bindingResult){
 		if(bindingResult.hasErrors()) {
@@ -60,7 +60,7 @@ public class AnswerController {
 		return ResponseEntity.ok("수정이 완료되었습니다.");
 	}
 	
-	@PreAuthorize("isAuthenticated()")
+	//@PreAuthorize("isAuthenticated()")
 	@GetMapping("/delete/{id}")
 	public ResponseEntity<?> deleteAnswer(@PathVariable("id") Integer id,Principal principal){
 		Answer answer = this.answerService.getAnswer(id);
@@ -71,7 +71,7 @@ public class AnswerController {
 		return ResponseEntity.ok("삭제되었습니다.");
 	}
 	
-	@PreAuthorize("isAuthenticated()")
+	//@PreAuthorize("isAuthenticated()")
 	@GetMapping("/vote/{id}")
 	public ResponseEntity<?> voteAnswer(@PathVariable("id") Integer id, Principal principal){
 		Answer answer = this.answerService.getAnswer(id);

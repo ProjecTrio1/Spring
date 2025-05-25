@@ -25,6 +25,8 @@ public class SecurityConfig {
 			.requestMatchers("/user/login").permitAll()
 			.requestMatchers("/note/**").permitAll()
 			.requestMatchers("/ai/**").permitAll() //250426 추가
+			.requestMatchers("/question/**").permitAll()
+			.requestMatchers("/answer/**").permitAll()
 			.requestMatchers("/h2-console/**").permitAll()
 			.anyRequest().authenticated())
 			.headers((headers) -> headers

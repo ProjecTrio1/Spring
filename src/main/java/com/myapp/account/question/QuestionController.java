@@ -51,7 +51,7 @@ public class QuestionController {
 //		return ResponseEntity.ok();
 //	}
 	
-	@PreAuthorize("isAuthenticated()")
+	//@PreAuthorize("isAuthenticated()")
 	@PostMapping("/create")
 	public ResponseEntity<?> createQuestion(@RequestBody QuestionForm questionForm, Principal principal){
 		if(questionForm.getSubject() == null || questionForm.getSubject().isEmpty()
@@ -63,7 +63,7 @@ public class QuestionController {
 		return ResponseEntity.ok("글이 등록되었습니다.");
 	}
 	
-	@PreAuthorize("isAuthenticated()")
+	//@PreAuthorize("isAuthenticated()")
 	@PutMapping("/modify/{id}")
 	public ResponseEntity<?> modifyQuestion(@RequestBody @Valid QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal,BindingResult bindingResult) {
 		if(bindingResult.hasErrors()) {
@@ -77,7 +77,7 @@ public class QuestionController {
 		return ResponseEntity.ok("수정이 완료되었습니다.");
 	}
 	
-	@PreAuthorize("isAuthenticated()")
+	//@PreAuthorize("isAuthenticated()")
 	@GetMapping("/delete/{id}")
 	public ResponseEntity<?> deleteQuestion(@PathVariable("id") Integer id, Principal principal){
 		Question question = this.questionService.getQuestion(id);
@@ -88,7 +88,7 @@ public class QuestionController {
 		return ResponseEntity.ok("삭제되었습니다.");
 	}
 	
-	@PreAuthorize("isAuthenticated()")
+	//@PreAuthorize("isAuthenticated()")
 	@GetMapping("/vote/{id}")
 	public ResponseEntity<?> voteQuestion(@PathVariable("id") Integer id, Principal principal){
 		Question question = this.questionService.getQuestion(id);
