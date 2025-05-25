@@ -45,5 +45,5 @@ public class Question {
 	Set<User> voter;
 	
 	@ManyToMany
-	Set<User> scrap;
+	private Set<User> scrap;
 }

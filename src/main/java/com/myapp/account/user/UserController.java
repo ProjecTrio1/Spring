@@ -1,8 +1,10 @@
 package com.myapp.account.user;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -11,9 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.myapp.account.question.Question;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -75,5 +80,12 @@ public class UserController {
 			response.put("message", "존재하지 않는 사용자입니다.");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);//404
 		}
+	}
+	//내 스크랩 목록 보기
+	@GetMapping("/myscrap")
+	public ResponseEntity<?> getMyScaraps(Principal principal){
+		User user = this.userService.getUser(principal.getName());
+		Set<Question> scraps = user.getScrappedQuestions();
+		return ResponseEntity.ok(scraps);
 	}
 }

@@ -48,8 +48,15 @@ public class QuestionService {
 		this.questionRepository.save(question);
 	}
 	
-	public void scrap(Question question, User user) {
-		question.getScrap().add(user);
-		this.questionRepository.save(question);
+	public boolean toggleScrap(Question question, User user) {
+		if(question.getScrap().contains(user)) {
+			question.getScrap().remove(user);
+			this.questionRepository.save(question);
+			return false;
+		}else {
+			question.getScrap().add(user);
+			this.questionRepository.save(question);
+			return true;
+		}
 	}
 }

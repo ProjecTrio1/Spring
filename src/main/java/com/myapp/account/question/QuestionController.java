@@ -96,12 +96,12 @@ public class QuestionController {
 		this.questionService.vote(question, user);
 		return ResponseEntity.ok("추천되었습니다.");
 	}
-	
-	@GetMapping("/scrap/{id}")
-	public ResponseEntity<?> scrap(@PathVariable("id") Integer id, Principal principal){
+	//스크랩 적용, 취소 동시에 가능
+	@PostMapping("/scrap/{id}")
+	public ResponseEntity<?> toggleScrap(@PathVariable("id") Integer id, Principal principal){
 		Question question = this.questionService.getQuestion(id);
 		User user = this.userService.getUser(principal.getName());
-		this.questionService.scrap(question,user);
-		return ResponseEntity.ok("스크랩되었습니다.");
+		boolean isScrapped = this.questionService.toggleScrap(question,user);
+		return ResponseEntity.ok(isScrapped? "스크랩되었습니다.":"스크랩이 취소되었습니다.");
 	}
 }
