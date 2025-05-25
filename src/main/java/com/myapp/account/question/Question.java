@@ -43,4 +43,7 @@ public class Question {
 	
 	@ManyToMany
 	Set<User> voter;
+	
+	@ManyToMany
+	Set<User> scrap;
 }

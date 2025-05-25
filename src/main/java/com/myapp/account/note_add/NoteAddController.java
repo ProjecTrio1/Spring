@@ -1,4 +1,5 @@
 package com.myapp.account.note_add;
+import java.net.Authenticator;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.PutMapping;
 
 import com.myapp.account.ai.AiService;
@@ -140,6 +142,13 @@ public class NoteAddController {
 		note.setUserFeedback(dto.isAgree());
 		noteAddRepository.save(note);
 		return ResponseEntity.ok("피드백 반영 완료");
+	}
+	@GetMapping("/feedback/{noteId}")
+	public ResponseEntity<?> getFeedback(@PathVariable("noteId") Long noteId) {
+	    NoteAdd note = noteAddRepository.findById(noteId)
+	        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+	    return ResponseEntity.ok(Map.of("userFeedback", note.getUserFeedback()));
 	}
 	
 	//수정

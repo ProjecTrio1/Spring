@@ -47,4 +47,9 @@ public class QuestionService {
 		question.getVoter().add(user);
 		this.questionRepository.save(question);
 	}
+	
+	public void scrap(Question question, User user) {
+		question.getScrap().add(user);
+		this.questionRepository.save(question);
+	}
 }
