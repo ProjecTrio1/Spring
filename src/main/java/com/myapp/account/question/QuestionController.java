@@ -8,7 +8,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -97,6 +96,13 @@ public class QuestionController {
 		User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
 		this.questionService.vote(question, user);
 		return ResponseEntity.ok("추천되었습니다.");
+	}
+	//추천 수 기준으로 내림차순
+	@GetMapping("/vote/list")
+	public ResponseEntity<?> getSortedQuestionList(){
+		List<Question> questionList = questionService.getList();
+		questionList.sort((q1,q2)-> Integer.compare(q2.getVoter().size(), q1.getVoter().size()));
+		return ResponseEntity.ok(questionList);
 	}
 	//스크랩 적용, 취소 동시에 가능
 	@PostMapping("/scrap/{id}")
