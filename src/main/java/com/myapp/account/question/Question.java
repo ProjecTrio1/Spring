@@ -1,9 +1,11 @@
 package com.myapp.account.question;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.myapp.account.answer.Answer;
 import com.myapp.account.user.User;
 
@@ -13,6 +15,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -45,5 +49,11 @@ public class Question {
 	Set<User> voter;
 	
 	@ManyToMany
-	private Set<User> scrap;
+	@JoinTable(
+		    name = "question_scrap",
+		    joinColumns = @JoinColumn(name = "question_id"),
+		    inverseJoinColumns = @JoinColumn(name = "scrap_id")
+		)
+	@JsonIgnore
+	private Set<User> scrap = new HashSet<>();
 }

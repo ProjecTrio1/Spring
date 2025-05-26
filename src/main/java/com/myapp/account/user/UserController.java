@@ -1,6 +1,5 @@
 package com.myapp.account.user;
 
-import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.myapp.account.question.Question;
 
@@ -83,8 +83,8 @@ public class UserController {
 	}
 	//내 스크랩 목록 보기
 	@GetMapping("/myscrap")
-	public ResponseEntity<?> getMyScaraps(Principal principal){
-		User user = this.userService.getUser(principal.getName());
+	public ResponseEntity<?> getMyScaraps(@RequestParam("userID") Long userID){
+		User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
 		Set<Question> scraps = user.getScrappedQuestions();
 		return ResponseEntity.ok(scraps);
 	}

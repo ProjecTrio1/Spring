@@ -1,6 +1,7 @@
 package com.myapp.account.user;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,6 +47,7 @@ public class User {
 	private List<NoteAdd> notes = new ArrayList<>();
 	
 	@ManyToMany(mappedBy = "scrap")
-	private Set<Question> scrappedQuestions;
+	@JsonIgnore
+	private Set<Question> scrappedQuestions= new HashSet<>();
 }
 

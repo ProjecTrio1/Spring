@@ -21,12 +21,11 @@ public class SecurityConfig {
 		http
 			.csrf(csrf -> csrf.disable())
 			.authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
-			.requestMatchers("/user/signup").permitAll()
-			.requestMatchers("/user/login").permitAll()
+			.requestMatchers("/user/**").permitAll()
 			.requestMatchers("/note/**").permitAll()
 			.requestMatchers("/ai/**").permitAll() //250426 추가
-			.requestMatchers("/question/**").permitAll()
-			.requestMatchers("/answer/**").permitAll()
+		    .requestMatchers("/question/**").permitAll()
+		    .requestMatchers("/answer/**").permitAll() 
 			.requestMatchers("/h2-console/**").permitAll()
 			.anyRequest().authenticated())
 			.headers((headers) -> headers

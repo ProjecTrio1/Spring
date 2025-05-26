@@ -49,6 +49,8 @@ public class QuestionService {
 	}
 	
 	public boolean toggleScrap(Question question, User user) {
+	    System.out.println("question id: " + question.getId());
+	    System.out.println("user id: " + user.getId());
 		if(question.getScrap().contains(user)) {
 			question.getScrap().remove(user);
 			this.questionRepository.save(question);

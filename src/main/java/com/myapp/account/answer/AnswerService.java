@@ -1,7 +1,9 @@
 package com.myapp.account.answer;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.myapp.account.question.DataNotFoundException;
@@ -14,6 +16,11 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class AnswerService {
 	private final AnswerRepository answerRepository;
+	
+	public List<Answer> getAnswerByQuestion(Question question){
+		Sort sort = Sort.by(Sort.Order.desc("createDate"));
+		return answerRepository.findByQuestion(question, sort);
+	}
 	
 	public Answer getAnswer(Integer id) {
 		return answerRepository.findById(id)

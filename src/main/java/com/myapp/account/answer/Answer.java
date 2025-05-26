@@ -3,6 +3,7 @@ package com.myapp.account.answer;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.myapp.account.question.Question;
 import com.myapp.account.user.User;
 
@@ -28,6 +29,7 @@ public class Answer {
 	private LocalDateTime createDate;
 	
 	@ManyToOne
+	@JsonIgnore
 	private Question question;
 	
 	@ManyToOne
