@@ -125,9 +125,9 @@ public class NoteAddController {
 	}
 	//월간리포트
 	@GetMapping("/report/monthly/{userId}")
-	public ResponseEntity<?> getMonthlyReport(@PathVariable("userId") Long userID){
+	public ResponseEntity<?> getMonthlyReport(@PathVariable("userId") Long userID, @RequestParam("year") int year, @RequestParam("month") int month){
 		try {
-			MonthlyReportDto report = noteAddService.generateMonthlyReport(userID);
+			MonthlyReportDto report = noteAddService.generateMonthlyReport(userID,year,month);
 			return ResponseEntity.ok(report);
 		}catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

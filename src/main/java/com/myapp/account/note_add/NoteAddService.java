@@ -58,9 +58,9 @@ public class NoteAddService {
 		}
 	}
 	//월간 리포트
-	public MonthlyReportDto generateMonthlyReport(Long userID) {
-		LocalDateTime start = YearMonth.now().minusMonths(1).atDay(1).atStartOfDay();
-		LocalDateTime end = YearMonth.now().minusMonths(1).atEndOfMonth().atTime(23,59);
+	public MonthlyReportDto generateMonthlyReport(Long userID,int year, int month) {
+		LocalDateTime start = YearMonth.of(year, month).minusMonths(1).atDay(1).atStartOfDay();
+		LocalDateTime end = YearMonth.of(year, month).minusMonths(1).atEndOfMonth().atTime(23,59);
 		
 		User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
 		List<NoteAdd> notes = noteAddRepository.findByUserAndCreatedAtBetween(user, start, end);
@@ -102,7 +102,7 @@ public class NoteAddService {
 			}
 		}
 		//전월 데이터
-		Map<String, Integer> lastMonthMap = getLastMonthCategoryTotals(userID);
+		Map<String, Integer> lastMonthMap = getLastMonthCategoryTotals(userID,year,month);
 		
 		List<String> suggestions = new ArrayList<>();
 		
@@ -127,7 +127,7 @@ public class NoteAddService {
 		String finalSuggestion = String.join(" / ", suggestions);
 		
 		return new MonthlyReportDto(
-				YearMonth.now().minusMonths(1).toString(),
+				YearMonth.of(year, month).minusMonths(1).toString(),
 				totalAmount,
 				anomalyCount,
 				overspendingCount,
@@ -136,8 +136,8 @@ public class NoteAddService {
 		);
 	}
 	//전월 카테고리별 소비 총액
-	private Map<String, Integer> getLastMonthCategoryTotals(Long userId){
-		YearMonth lastMonth = YearMonth.now().minusMonths(2);
+	private Map<String, Integer> getLastMonthCategoryTotals(Long userId, int year, int month){
+		YearMonth lastMonth = YearMonth.of(year, month).minusMonths(2);
 		LocalDateTime start = lastMonth.atDay(1).atStartOfDay();
 		LocalDateTime end = lastMonth.atEndOfMonth().atTime(LocalTime.MAX);
 		
