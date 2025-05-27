@@ -1,5 +1,4 @@
 package com.myapp.account.note_add;
-import java.net.Authenticator;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;

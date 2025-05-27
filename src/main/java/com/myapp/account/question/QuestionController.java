@@ -94,6 +94,9 @@ public class QuestionController {
 	public ResponseEntity<?> voteQuestion(@PathVariable("id") Integer id, @RequestParam("userID") Long userID){
 		Question question = this.questionService.getQuestion(id);
 		User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+		if(question.getVoter().contains(user)) {
+			return ResponseEntity.badRequest().body("이미 추천되었습니다.");
+		}
 		this.questionService.vote(question, user);
 		return ResponseEntity.ok("추천되었습니다.");
 	}

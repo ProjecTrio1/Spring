@@ -85,6 +85,9 @@ public class AnswerController {
 	public ResponseEntity<?> voteAnswer(@PathVariable("id") Integer id, @RequestParam("userID") Long userID){
 		Answer answer = this.answerService.getAnswer(id);
 		User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+		if(answer.getVoter().contains(user)) {
+			return ResponseEntity.badRequest().body("이미 추천되었습니다.");
+		}
 		this.answerService.vote(answer, user);
 		return ResponseEntity.ok("추천되었습니다.");
 	}
