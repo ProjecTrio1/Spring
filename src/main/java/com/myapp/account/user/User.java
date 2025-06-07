@@ -1,5 +1,6 @@
 package com.myapp.account.user;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,5 +50,12 @@ public class User {
 	@ManyToMany(mappedBy = "scrap")
 	@JsonIgnore
 	private Set<Question> scrappedQuestions= new HashSet<>();
+	
+	private Boolean isPersonalModelTrained = false;//무한 학습 방지
+	private LocalDateTime lastTrainedAt;
+	
+	//지도 모델 전환 및 재학습
+	private Boolean isSupervisedModelTrained = false;//무한 학습 방지
+	private LocalDateTime supervisedModelTrainedAt;
 }
 

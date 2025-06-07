@@ -163,9 +163,13 @@ public class NoteAddService {
 				note.getUserFeedback()
 		);
 	}
-	//사용자 맞춤ai로 전환하기 위한 조건 판별
+	//사용자 맞춤ai로 전환하기 위한 조건 판별 (비지도학습)
 	public boolean shouldTrainPersonalModel(Long userId) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+		
+		if(Boolean.TRUE.equals(user.getIsSupervisedModelTrained())) {
+			return false; //이미 지도 전환인 경우 비지도 판단 안함
+		}
 		List<NoteAdd> records = noteAddRepository.findByUser(user);
 		int spendingCount =0; //300건이상
 		LocalDateTime spendingDate = null; //3개월이상
@@ -188,39 +192,12 @@ public class NoteAddService {
 		}
 		return hasEnoughRecords && hasEnoughMonths;
 	}
-	//조건 판별 후 학습 요청
-	public void checkAndTrain(Long userId) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));		
-		boolean shouldTrainUnsupervised = shouldTrainPersonalModel(userId);
-		boolean shouldTrainSupervised = shouldTrainFeedback(userId);
-		System.out.println("모델 전환 조건 충족 여부(비지도): " + shouldTrainUnsupervised);
-		System.out.println("모델 전환 조건 충족 여부(지도): " + shouldTrainSupervised);
-		int genderCode = "M".equalsIgnoreCase(user.getGender()) ? 1:0;
-		
-		if(shouldTrainUnsupervised || shouldTrainSupervised) {
-			System.out.println("사용자 맞춤 모델 학습 요청 시작");
-			List<NoteAdd> records = noteAddRepository.findByUser(user);
-			RequestSendToFlaskDto dto = new RequestSendToFlaskDto();
-			dto.setUserId(user.getId().toString());
-			dto.setGender(genderCode);
-			dto.setAgeGroup(user.getAge());
-			
-			try {
-				if(shouldTrainUnsupervised) {
-					aiService.requestTrainToFlask(dto, records);
-				}else if(shouldTrainSupervised){
-					aiService.requestTrainFeedback(dto, records);
-				}
-				System.out.println("Flask 요청 완료");
-			}catch(JsonProcessingException e) {
-				System.out.println("Flask 요청 실패 : "+ e.getMessage());
-				e.printStackTrace();
-			}
-		}
-	}
 	//피드백 반영 후 지도 학습 전환 조건 판별
 	public boolean shouldTrainFeedback(Long userId) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+		if(Boolean.TRUE.equals(user.getIsSupervisedModelTrained())) {
+			return false; //이미 지도 모델 학습된 경우 조건 판단 안함.
+		}
 		List<NoteAdd> records = noteAddRepository.findByUser(user);
 		
 		long feedbackCount = records.stream()
@@ -228,6 +205,56 @@ public class NoteAddService {
 				.count();
 		
 		return feedbackCount >= 300;
+	}
+	//조건 판별 후 학습 요청
+	public void checkAndTrain(Long userId) {
+		User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));		
+		boolean shouldTrainUnsupervised = false; //비지도 조건 만족했는지 판단용
+		boolean shouldTrainSupervised = false; //지도 조건 만족했는지 판단용
+		//지도 모델로 전환된 경우 비지도는 무시
+		if(Boolean.TRUE.equals(user.getIsSupervisedModelTrained())) {
+			LocalDateTime lastTrained = user.getSupervisedModelTrainedAt();
+			long monthsSinceLast = (lastTrained != null)
+					? ChronoUnit.MONTHS.between(lastTrained, LocalDateTime.now())
+					: Long.MAX_VALUE;
+			shouldTrainSupervised = monthsSinceLast >= 3;
+		}else {
+			//지도 모델 안된 경우 비지도 조건 판단
+			if(!Boolean.TRUE.equals(user.getIsPersonalModelTrained())) {
+				shouldTrainUnsupervised = shouldTrainPersonalModel(userId);
+			}
+			//지도 조건 판단
+			shouldTrainSupervised = shouldTrainFeedback(userId);
+		}
+		if(!shouldTrainUnsupervised && !shouldTrainSupervised) {
+			return; //비지도 지도 조건 모두 미충족
+		}
+
+		List<NoteAdd> records = noteAddRepository.findByUser(user);
+		RequestSendToFlaskDto dto = new RequestSendToFlaskDto();
+		dto.setUserId(user.getId().toString());
+		dto.setGender("M".equalsIgnoreCase(user.getGender()) ? 1:0);
+		dto.setAgeGroup(user.getAge());
+		
+		try {
+			if(shouldTrainUnsupervised) {
+				System.out.println("비지도 학습 시작");
+				aiService.requestTrainToFlask(dto, records);
+				user.setIsPersonalModelTrained(true);
+				user.setLastTrainedAt(LocalDateTime.now());
+			}else if(shouldTrainSupervised){
+				System.out.println("지도 학습 시작");
+				aiService.requestTrainFeedback(dto, records);
+				user.setIsSupervisedModelTrained(true);
+				user.setSupervisedModelTrainedAt(LocalDateTime.now());
+			}
+			userRepository.save(user);
+			System.out.println("Flask 요청 완료");
+		}catch(JsonProcessingException e) {
+			System.out.println("Flask 요청 실패 : "+ e.getMessage());
+			e.printStackTrace();
+		}
+
 	}
 	//수정
 	public void updateNote(Long noteId, NoteUpdateDto dto) {
