@@ -204,7 +204,7 @@ public class NoteAddService {
 				.filter(note -> Boolean.TRUE.equals(note.getUserFeedback()))
 				.count();
 		
-		return feedbackCount >= 300;
+		return feedbackCount >= 50;
 	}
 	//조건 판별 후 학습 요청
 	public void checkAndTrain(Long userId) {
